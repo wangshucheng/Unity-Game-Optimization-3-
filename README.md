@@ -8,8 +8,8 @@
 
 ### 目录
 
-> - [Section1.Base Scripting Optimization（**基础脚本优化**）](Section1.Chapter1.md)
-> > - [Chapter1.Evaluating Performance Problems（**分析表现问题**）]()
+> - [Section1.Base Scripting Optimization（**基础脚本优化**）](Chapter1.md)
+> > - [Chapter1.Evaluating Performance Problems（**分析表现问题**）](Chapter1.md)
 > > - [Chapter2.Scripting Strategies （**脚本策略**）]()
 > - [Section2.Graphical Optimization（**GPU优化**）]()
 > > - [Chapter3.The Benefits of Batching（**合批的好处**）]()
