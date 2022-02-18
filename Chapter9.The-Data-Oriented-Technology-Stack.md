@@ -447,4 +447,12 @@ ECS，另一方面，从分离数据和行为来看，基于3个基本组件：
       }
     }
     
-这和之前的job很相似，但是有一系列不同，首先我们继承了
+这和之前的job很相似，但是有一系列不同，首先我们继承了IJobForEachinstead的IJobParallelForTransform因为entity没有Transform，你可能注意掉我们传入两个参数给IJobForEach接口，这是我们在job中想要使用的组件的类型，就像名字一样，Rotation和RotationSpeed，我们想要在那里放入组件的任何数字，重要的是我们添加了相同的组件，以相同的顺序，作为Execute的参数
+
+例如，如果我们继承IJobForeach<Rotation,RotationSpeed>，那么Execute就会取Rotation和RotationSpeed组件作为参数，然而，如果我们继承IJobForeach<Scale>那么Execute就会只取一个参数，这表现会用在所有entity上，确认所有的entity都有Rotation和RotationSpeed作为参数
+   
+最后，你可能注意我们用一些奇怪的类型：quaterion，用一个小写字母q，这是因为Unity开发出新的类型对于vector和quatrains在ECS中对于jobs系统和组件有优化
+
+现在我们有一个job，我们需要利用它的优点创造一个组件.
+
+                                                                                                                                                                                  
