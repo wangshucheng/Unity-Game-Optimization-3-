@@ -1,4 +1,3 @@
-
 ---
 layout: default
 title: "Chapter 8 内存管理"
