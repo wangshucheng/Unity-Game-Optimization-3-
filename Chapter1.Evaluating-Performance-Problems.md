@@ -10,38 +10,38 @@ nav_order: 2
 
 *   设备上连接profile，数据并不完全准确
 
-    *   由于Development 模式和连接Unity profile 导致CPU 负荷增加和内存大量增加。如果在一些大的项目中运行时，会照成内存溢出，脚本不运行，物理效果停止update等情况
-    *   为了规避一些上述情况，我们要使用benchmarking(基准化分析法): 在一些切换点，性能明显变差时关注一段时间。
-    *   Editor 中的Profile 数据不可靠，需要在真机中使用。
+    *   由于 Development 模式和连接 Unity Profiler 导致 CPU 负荷增加和内存大量增加。如果在一些大的项目中运行时，会造成内存溢出、脚本不运行、物理效果停止 Update 等情况。
+    *   为了规避一些上述情况，我们要使用 benchmarking（基准化分析法）：在一些切换点，性能明显变差时关注一段时间。
+    *   Editor 中的 Profiler 数据不可靠，需要在真机中使用。
 
-## Profile 远程连接iOS
+## Profile 远程连接 iOS
 
-注意：连接iOS设备时，Unity必须是在Mac机器上运行
+注意：连接 iOS 设备时，Unity 必须是在 Mac 机器上运行。
 
-1.  打包时Development Build 和 Autoconnect Profiler 打勾
-2.  电脑和手机连接相同的本地WiFi
-3.  用usb连接手机和mac电脑
+1.  打包时勾选 Development Build 和 Autoconnect Profiler
+2.  电脑和手机连接相同的本地 WiFi
+3.  用 USB 连接手机和 Mac 电脑
 4.  打包
-5.  在Unity中打开Profiler，然后选择iOS设备
+5.  在 Unity 中打开 Profiler，然后选择 iOS 设备
 
 如果连接还有问题，查看这里：[https:/​/​docs.​unity3d.com/​Manual/TroubleShootingIPhone.​html](https://%E2%80%8B/%E2%80%8Bdocs.%E2%80%8Bunity3d.com/%E2%80%8BManual/TroubleShootingIPhone.%E2%80%8Bhtml)
 
-## Profile 远程连接Android
+## Profile 远程连接 Android
 
-和iOS相似。\
-如果连接有问题，查看这里：\[https\:/​/​docs.​unity3d.com/​Manual/TroubleShootingAndroid. ​html]\(https\:/​/​docs.​unity3d.com/​Manual/TroubleShootingAndroid. ​html)
+和 iOS 相似。\
+如果连接有问题，查看 Unity 官方文档的 [TroubleShootingAndroid](https://docs.unity3d.com/Manual/TroubleShootingAndroid.html) 页面。
 
 ## Deep Profile
 
-能看到几乎所有的调用方法。但是消耗很大。
+能看到几乎所有的调用方法，但是消耗很大。
 
-## Allocation Callstack （2019以上）
+## Allocation Callstack（2019 以上）
 
-激活Call Stacks 按钮后，在不开启DeepProfile的情况下。Profiler也会收集更多的内存分配问题。\
-然后通过Show Related Objects 按钮，我们就能看到调用堆栈了。\
+激活 Call Stacks 按钮后，即使不开启 Deep Profile，Profiler 也会收集更多的内存分配信息。\
+然后通过 Show Related Objects 按钮，我们就能看到调用堆栈了。\
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/76a434df185840afa9ff2b4c34ed2e36.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBARWdnYnJlYWtlcjIwNzc=,size_20,color_FFFFFF,t_70,g_se,x_16 "在这里插入图片描述")
 
-## 性能分析Check List
+## 性能分析 Check List
 
 1.  验证目标脚本是否出现在场景中
 2.  验证目标脚本出现的次数是否正确
@@ -52,7 +52,7 @@ nav_order: 2
 
 ## 自定义脚本分析
 
-使用stopwatch 类创建计时工具：
+使用 `Stopwatch` 类创建计时工具：
 
     using System.Diagnostics;
     public class CustomTimer : IDisposable {
@@ -87,5 +87,5 @@ nav_order: 2
     	for(int i = 0; i < numTests; ++i) {
     		TestFunction();
     	}
-    } // 执行完成后timer's Dispose() 会被调用 
+    } // 执行完成后 timer 的 Dispose() 会被调用
 
