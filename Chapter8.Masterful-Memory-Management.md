@@ -152,4 +152,103 @@ Unity API 中，所有返回数组数据的指令都会导致在堆上分配内�
 
 ### 使用对象池
 
-这是个稍微复杂但对内存管理非常有效的技术，相关的技术文章很多，这里就不展开讲解了。
+对象池是一种预先分配对象并在需要时重复使用，而不是频繁创建和销毁对象的技术。它能显著减少运行时的堆分配和 GC 压力。
+
+#### 简单对象池示例
+
+```csharp
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ObjectPool<T> where T : class, new() {
+    private Queue<T> _pool = new Queue<T>();
+    private int _maxSize;
+
+    public ObjectPool(int initialSize = 0, int maxSize = int.MaxValue) {
+        _maxSize = maxSize;
+        for (int i = 0; i < initialSize; i++) {
+            _pool.Enqueue(new T());
+        }
+    }
+
+    public T Get() {
+        return _pool.Count > 0 ? _pool.Dequeue() : new T();
+    }
+
+    public void Return(T item) {
+        if (item == null) return;
+        if (_pool.Count < _maxSize) {
+            _pool.Enqueue(item);
+        }
+    }
+}
+```
+
+#### Prefab Pooling
+
+对于 GameObject 实例，可以使用 Prefab Pool 来避免 `Instantiate()` 和 `Destroy()` 带来的内存分配：
+
+```csharp
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PrefabPool : MonoBehaviour {
+    [SerializeField] private GameObject _prefab;
+    [SerializeField] private int _initialSize = 10;
+    private Queue<GameObject> _inactive = new Queue<GameObject>();
+    private HashSet<GameObject> _active = new HashSet<GameObject>();
+
+    void Start() {
+        for (int i = 0; i < _initialSize; i++) {
+            SpawnInactive();
+        }
+    }
+
+    private GameObject SpawnInactive() {
+        GameObject go = Instantiate(_prefab);
+        go.SetActive(false);
+        _inactive.Enqueue(go);
+        return go;
+    }
+
+    public GameObject Spawn(Vector3 position, Quaternion rotation) {
+        GameObject go = _inactive.Count > 0 ? _inactive.Dequeue() : SpawnInactive();
+        go.transform.position = position;
+        go.transform.rotation = rotation;
+        go.SetActive(true);
+        _active.Add(go);
+        return go;
+    }
+
+    public bool Despawn(GameObject go) {
+        if (!_active.Contains(go)) return false;
+        go.SetActive(false);
+        _active.Remove(go);
+        _inactive.Enqueue(go);
+        return true;
+    }
+}
+```
+
+使用对象池时需要注意：
+- 重置对象状态：在重新激活对象前，清理速度、计时器、事件订阅等状态。
+- 预生成数量：根据实际需求预生成足够数量，避免运行时频繁 Instantiate。
+- 内存上限：设置池子最大容量，避免无限制增长。
+- 场景切换：在加载新场景前清空对象池，避免引用已被销毁的对象。
+
+### Closures（闭包）
+
+匿名方法和 lambda 表达式可能捕获局部变量，导致编译器生成额外的类对象，从而产生堆分配。在性能敏感的代码中（如每帧调用的委托），应避免使用捕获外部变量的 lambda。
+
+### 临时工作缓冲区
+
+避免频繁创建临时数组或列表。可以复用一个预先分配的缓冲区，或者使用 `ArrayPool<T>` / `ListPool<T>`（如果项目使用相关库）。
+
+### .NET 库函数
+
+一些 .NET 库函数会在堆上分配内存（如 LINQ）。在性能关键路径上，尽量用显式循环替代 LINQ，避免不必要的分配。
+
+### IL2CPP 和 WebGL 优化
+
+- **IL2CPP**：相比 Mono Runtime，IL2CPP 通常能提供更好的性能，尤其是在 iOS 等禁止 JIT 的平台上。可以关注 Unity 官方博客关于 IL2CPP 优化的系列文章。
+- **WebGL**：WebGL 有特殊的内存限制和 GC 行为。Unity 官方博客有专门讨论 WebGL 内存管理的文章，建议 WebGL 开发者阅读。

@@ -6,7 +6,7 @@ nav_order: 1
 
 # Unity Game Optimization 第3版 中文翻译
 
-先从部分章节开始，完整翻译正在逐步完善中。
+本书为《Unity Game Optimization, Third Edition》的中文翻译版，共 10 章，涵盖性能分析、脚本策略、渲染优化、资源优化、物理优化、AR/VR 优化、内存管理、DOTS 技术栈以及编辑器技巧。
 
 ## 目录
 

@@ -464,6 +464,60 @@ ECS，从分离数据和行为来看，基于 3 个基本概念：
 
 最后，你可能注意到我们用一些奇怪的类型：`quaternion`，用一个小写字母 q。这是因为 Unity 为 vector 和 quaternion 在 ECS 中针对 Job 系统和组件开发了新的优化类型。
 
-现在我们有一个 job，我们需要利用它的优点创造一个 system。
+Unity.Mathematics 中还有很多类似的类型，而且它们仍在持续开发中。要获取最新信息，可以查看 Unity.Mathematics 模块文档：<https://docs.unity3d.com/Packages/com.unity.mathematics@1.0/manual/index.html>。
+
+现在我们有一个 job，我们需要利用它的优点创造一个 system：
+
+    public class RotationSystem : JobComponentSystem
+    {
+      protected override JobHandle OnUpdate(JobHandle inputDeps)
+      {
+        RotatorJob rotatorJob = new RotatorJob()
+        {
+          deltaTime = Time.deltaTime
+        };
+        return rotatorJob.Schedule(this, inputDeps);
+      }
+    }
+
+`JobComponentSystem` 是一个用来构建可以使用 C# Job 的 system 的类。
+
+我们首先定义一个 `RotationSystem` 类，继承自 `JobComponentSystem`。在这个类中，我们重写 `OnUpdate`（注意：是 `OnUpdate` 而不是 `Update`）方法，在其中创建一个新的 `RotatorJob` 并安排它执行。
+
+现在，我们只需要把 `ECSJobManager` 绑定到一个空的 GameObject 上并运行应用，就能看到所有方块像往常一样旋转。经过这些改动后，我们终于达到了 100 FPS 以上！
+
+看 Profiler，时间短到可以看到 v-sync 的小尖峰。每一帧耗时不到 10ms，这比经典非 DOTS 方案中仅脚本就消耗的时间还要少！这是一个不可思议的速度提升，而且应用的内存占用还不到原来的一半。
+
+但猜猜看，我们还能做得更好。
+
+## Burst 编译器
+
+DOTS 的最后一个组件是 Burst 编译器。Burst 编译器是一个可以把 C# 的一个子集编译成优化后的本地代码的编译器。它的主要目标是编译 job，使它们尽可能快速和轻量。
+
+很酷的是，使用 Burst 编译器极其简单。首先，你需要从 **Window | Package Manager** 安装 Burst 包。然后，唯一需要做的改变就是在 job 定义上添加 `[BurstCompile]` 特性：
+
+    [BurstCompile]
+    public struct RotatorJob : IJobForEach<Rotation, RotationSpeed>
+    {
+      [ReadOnly]
+      public float deltaTime;
+
+      public void Execute(ref Rotation rotation, [ReadOnly] ref RotationSpeed rotationSpeed)
+      {
+        rotation.Value = math.mul(math.normalize(rotation.Value), quaternion.AxisAngle(math.up(), rotationSpeed.Value * deltaTime));
+      }
+    }
+
+就这些！现在 job 会用 Burst 编译，这能从我们的应用中再挤出一点性能。我们的 demo 很简单，Burst 编译的效果有限——在我的机器上可以达到 110 FPS——但对于更复杂的 job，影响会更加显著。
+
+## 小结
+
+DOTS 是 Unity 为推动引擎进入游戏未来所做的努力的巅峰。我坚信在未来，DOTS 将成为任何优化工作的核心组件，而随着 DOTS 变得更稳定、得到社区更多支持，这一章肯定会扩展成好几章。
+
+不幸的是，在这个阶段，C# Job 和 ECS 仍然非常不稳定，它们的 API 变化很快，因此我不建议在大型、重要的商业游戏中使用它们。不过，我认为开始尝试它们是很重要的，这样当它们的时机到来时我们就能做好准备。
+
+这一章只是触及了 DOTS 的表面。Job 和 ECS 中还有很多细节、配置和优化可以实现。要了解更多信息，Unity DOTS 官方主页 <https://unity.com/dots> 是你最好的朋友。
+
+这一章实际上总结了我们能传授的所有明确旨在提升应用性能的技术。然而，优化你的工作流也同样非常有益。正如之前提到的，性能优化工作的一个恒定成本是开发时间。但是，如果你能加快开发工作流程，在繁琐的工作中节省一些时间，那么希望你就能腾出足够的时间来实际实现我们讨论过的尽可能多的优化技术。
 
                                                                                                                                                                                   

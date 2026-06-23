@@ -70,6 +70,15 @@ nav_order: 5
     *   将多个音频混音后，使用滤镜效果（Filter Effect）播放，这样可以节省磁盘空间。
     *   但是每个滤镜都会消耗一定的 CPU 和内存，大量使用会造成严重的性能后果。
     *   最好的办法是利用 Unity 的音频混音器，生成通用的滤镜效果模板，以最小化内存开销。官方教程：<https://learn.unity.com/tutorial/audio-mixing#>
+*   考虑所有压缩格式
+
+    *   不要只使用默认格式。根据目标平台、音频类型和音质要求，测试不同压缩格式的效果。
+*   谨慎使用 Streaming
+
+    *   Streaming 虽然内存占用最小，但会引入额外的 CPU 开销和磁盘 I/O。在移动设备上要谨慎使用，避免在关键时刻产生卡顿。
+*   负责任地使用远程内容流
+
+    *   从网络流式加载音频可以减少包体大小，但会引入延迟和带宽消耗。确保有合适的加载策略和错误处理。
 *   考虑用于背景音乐的音频模块（Audio Module）文件
 
     *   Unity 支持的扩展名有：.it、.s3m、.xm 和 .mod，无损且内存占用小。
@@ -131,9 +140,13 @@ nav_order: 5
 *   但是如果纹理开启了 Read/Write Enable，此功能无效，改为同步上传。
 *   使用 `Resources.Load()` 和 `LoadImage(byte[])` 加载的纹理无法使用此功能。
 
-# 3. [网格](https://so.csdn.net/so/search?q=%E7%BD%91%E6%A0%BC\&spm=1001.2101.3001.7020)和动画文件
+# 3. [网格](https://so.csdn.net/so/search?q=%E7%BD%91%E6%A0%BC\&spm=1001.2101.3001.7020)和动画文件
 
 ## 3.1 减少多边形数量
+
+*   减少多边形数量是获得性能提升最明显的方式，应该始终考虑。
+*   由于 SkinnedMeshRenderer 无法使用批处理，减少其多边形数量尤为重要。
+*   3D 建模/动画工具通常提供自动网格优化功能，可以估计整体形状并剥离多边形。
 
 ## 3.2 调整网格压缩
 
@@ -159,3 +172,10 @@ nav_order: 5
 *   一些零碎的物体，且没有相对运动，可以合并后再使用，以减少 Draw Call 和顶点数。
 *   Asset Store 中有不少此类插件。
 
+# 4. Asset Bundles 和 Resources
+
+*   `Resources` 文件夹方便快速原型开发，但所有资源都会打包进最终构建，增加包体大小和加载时间。应尽量避免在生产环境中大量使用。
+*   `AssetBundles` 允许将资源分离打包，按需下载和加载，是管理大型项目资源的首选方案。
+*   使用 AssetBundles 可以减少初始包体大小、支持热更新、按需加载资源。
+*   需要注意 AssetBundle 的依赖管理、版本控制和内存释放，避免重复加载和内存泄漏。
+*   更多内容可以参考 Unity 官方教程：[Assets, Resources and AssetBundles](https://learn.unity.com/tutorial/assets-resources-and-assetbundles)。

@@ -81,6 +81,8 @@ nav_order: 3
 ## 避免使用 Find() 和 SendMessage()
 
 *   这是 Unity 的两个性能较差的设计，能不用就不用。
+*   替代方案之一是为需要频繁通信的对象预存引用（在 Inspector 中拖拽赋值，或在 `Start` / `Awake` 中初始化缓存）。
+*   对于大量对象间的解耦通信，可以考虑实现一个全局消息系统（Global Messaging System）：任何对象都可以注册监听特定类型的消息，发送者只需广播消息而不用关心谁在监听。这样能保持模块化和低耦合，但实现和维护成本较高，适合中大型项目。
 
 ## 禁用未使用的脚本和对象
 
@@ -132,3 +134,46 @@ nav_order: 3
 ### 创建自定义的 Update()
 
 避免每个 MonoBehaviour 都使用自己的 Update 方法。可以制作一个拥有 Update 的单例对象，把需要 Update 的 MonoBehaviour 注册进去，使大多数对象都使用一个 Update() 进行更新。
+
+示例：
+
+```csharp
+public interface IUpdateable {
+    void OnUpdate(float deltaTime);
+}
+
+public class UpdateManager : MonoBehaviour {
+    private static UpdateManager _instance;
+    public static UpdateManager Instance {
+        get {
+            if (_instance == null) {
+                var go = new GameObject("UpdateManager");
+                _instance = go.AddComponent<UpdateManager>();
+                DontDestroyOnLoad(go);
+            }
+            return _instance;
+        }
+    }
+
+    private List<IUpdateable> _updateables = new List<IUpdateable>();
+
+    public void Register(IUpdateable updateable) {
+        if (!_updateables.Contains(updateable)) {
+            _updateables.Add(updateable);
+        }
+    }
+
+    public void Deregister(IUpdateable updateable) {
+        _updateables.Remove(updateable);
+    }
+
+    void Update() {
+        float dt = Time.deltaTime;
+        for (int i = 0; i < _updateables.Count; ++i) {
+            _updateables[i].OnUpdate(dt);
+        }
+    }
+}
+```
+
+需要每帧更新的对象实现 `IUpdateable` 并注册到 `UpdateManager` 中，而不是每个对象都有自己的 `Update()`。这样可以显著减少 Unity 回调系统的开销。
