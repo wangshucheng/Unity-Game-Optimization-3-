@@ -1,0 +1,14 @@
+# Jekyll 站点配置，用于 GitHub Pages 部署
+title: "Unity Game Optimization 第3版"
+description: "Unity 优化指南中文翻译"
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+url: "https://wangshucheng.github.io"
+baseurl: "/Unity-Game-Optimization-3-"
+search_enabled: true
+heading_anchors: true
+aux_links:
+  "GitHub 仓库":
+    - "//github.com/wangshucheng/Unity-Game-Optimization-3-"
+footer_content: "Copyright &copy; 原书作者与译者。基于 Unity Game Optimization 第3版中文翻译整理。"
